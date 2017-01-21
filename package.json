@@ -1,0 +1,21 @@
+{
+  "name": "yiban-check-in-api",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.16.0",
+    "express": "^4.14.0",
+    "express-session": "^1.14.2",
+    "mcrypt": "^0.1.12",
+    "mongoose": "^4.7.7",
+    "path": "^0.12.7",
+    "restc": "0.0.4",
+    "superagent": "^3.3.2"
+  }
+}
