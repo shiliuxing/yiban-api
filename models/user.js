@@ -19,7 +19,6 @@ User.statics.save = function(obj, callback){
   this
     .findOne({studentId:obj.studentId})
     .exec((err, data) => {
-      console.log(data);
       if(err){
         callback({done:false,data:'查找失败，请稍后重试'});
       } else {
@@ -35,78 +34,80 @@ User.statics.save = function(obj, callback){
     })
 }
 
-// 根据id查找用户
-User.statics.findById = function(id, callback){
-  this.findOne({_id:id}, 'realname studentId', (err, person) => {
-    err ? callback({done:false,data:err}) : callback({done:true,data:person});
-  })
+/**
+ * 根据id查找用户
+ * obj.id 用户id
+ * callback 回调函数
+ */
+User.statics.findById = function(obj, callback){
+  this
+    .findOne({_id:obj.id})
+    .exec((err, data) => {
+      if(err){
+        callback({done:false,data:'查找失败，请稍后重试'});
+      }else if(data){
+        callback({done:true,data:data});
+      }else{
+        callback({done:false,data:'没有该用户'});
+      }
+    })
 }
 
-// 根据学号查找用户
-User.statics.findByStudentId = function(id, callback){
-  this.findOne({studentId:id}, '_id', (err, person) => {
-    err ? callback({done:false,data:err}) : callback({done:true,data:person});
-  });
+/**
+ * 根据id删除用户
+ * obj.id 用户id
+ * callback 回调函数
+ */
+User.statics.deleteById = function(obj, callback) {
+  this
+    .remove({_id:obj.id})
+    .exec((err, data) => {
+      err ? callback({done:false,data:'删除失败，请稍后重试'}) : callback({done:true,data:data});
+    })
+}
+
+/**
+ * 更新用户信息
+ * obj.id 用户id 必填
+ * obj.studentId 可选
+ * obj.realname 可选
+ * callback 回调函数
+ */
+User.statics.updateInfo = function(obj, callback){
+  const newObj = {};
+  obj.studentId ? (newObj['studentId'] = obj.studentId) : '';
+  obj.realname ? (newObj['realname'] = obj.realname) : '';
+  
+  this
+    .where({_id:obj.id})
+    .update(newObj)
+    .exec((err, data) => {
+      err ? callback({done:false,data:'更新用户信息失败，请稍后重试'}) : callback({done:true,data:data});
+    })
 }
 
 /**
  * 查找用户
- * obj 用户信息的json对象
+ * obj.lastId 从该id开始查找 可选
+ * obj.count 查找数量 可选
+ * callback 回调函数
  */
-User.statics.findByPerson = function(obj, callback){
-  const query = {};
-  obj.realname ? (query['realname'] = obj.realname) : null;
-  obj.studentId ? (query['studentId'] = obj.studentId) : null;
-  this.find(query, 'realname studentId', (err, person) => {
-    err ? callback({done:false, data:err}) : callback({done:true, data:person});
-  })
-}
+User.statics.findUser = function(obj, callback) {
+  const query = obj.lastId ? { _id:{$gt:obj.lastId} } : {};
+  const count = obj.count ? obj.count : 20;
 
-/**
- * 添加用户
- * obj 用户信息的 json 对象，包括 studentId, realname
- */
-User.statics.addUser = function(obj, callback) {
   this
-    .findOne({
-      studentId: obj.studentId
-    })
+    .find(query)
+    .limit(count)
+    .sort({_id:1})
     .exec((err, data) => {
       if(err){
-        callback({done:false,data:err});
+        callback({done:false,data:'查找用户出错，请稍后重试'});
       }else{
-        if(data){
-          // 找到该用户
-          callback({done:false,data:data});
-        }else{
-          // 没找到该用户
-          const user = new this(obj);
-
-          user.save(err => {
-            err ? callback({done:false,data:err}) : callback({done:true,data:user});
-          });
-        }
-      }
-    });
-
-}
-
-/**
- * 删除用户
- * obj 用户信息的 json 对象，有 id 属性
- */
-User.statics.deleteById = function(obj, callback) {
-  this
-    .remove({
-      _id: obj.id
-    })
-    .exec((err, data) => {
-      if(err){
-        callback({done:false,data:err,msg:"删除用户出错"});
-      }else{
-        callback({done:true,data:data,msg:"删除用户成功"});
+        callback({done:true,data:data});
       }
     })
 }
+
 
 module.exports = mongoose.model('User', User);

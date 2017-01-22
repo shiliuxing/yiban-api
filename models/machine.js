@@ -46,7 +46,7 @@ Machine.statics.findById = function(obj, callback) {
       if(err){
         callback({done:false,data:'查找失败，请稍后重试'});
       }else if(data){
-        callback({done:true,data:data})
+        callback({done:true,data:data});
       }else{
         callback({done:false,data:'没有该机器'});
       }

@@ -16,13 +16,14 @@ exports.addMachine = (req, res) => {
   // 校验 MAC 地址
   if(mac && !mac.match(macReg)){
     res.json({code:1,msg:'mac地址格式不正确'});
+    return;
   }
 
   // 参数齐全
   if(mac && cpu && mark){
     // 将mac地址与cpu型号加密成机器码
     const code = decrypt.deAes192(mac.trim().toLowerCase() + '---' + cpu.trim().toLowerCase());
-    
+
     if(code){
       Machine.save({
         code: code,
@@ -49,9 +50,9 @@ exports.addMachine = (req, res) => {
 // 删除机器
 exports.deleteMachine = (req, res) => {
   const id = req.params.id;
-  
+
   if(id && id.match(idReg)){
-    
+
     Machine.findById({
       id:id
     }, result => {
@@ -91,15 +92,18 @@ exports.modifyMachine = (req, res) => {
   // 校验 id
   if(id && !id.match(idReg)){
     res.status(404).json({code:1,msg:'没有该机器'});
+    return;
   }
 
   // 校验 MAC 地址
   if(mac && !mac.match(macReg)){
     res.json({code:1,msg:'mac地址格式不正确'});
+    return;
   }
 
   if( !(mac || cpu || mark) ){
     res.json({code:1,msg:'缺失参数'});
+    return;
   }
 
   Machine.findById({
@@ -118,10 +122,7 @@ exports.modifyMachine = (req, res) => {
       }
 
       newInfo['code'] ? (newInfo['code'] = decrypt.deAes192(newInfo['code'])) : null;
-
-      if(mark){
-        newInfo['mark'] = mark.trim();
-      }
+      mark ? (newInfo['mark'] = mark.trim()) : null;
 
       Machine.updateInfo(newInfo, result => {
         if(result.done){
@@ -164,7 +165,7 @@ exports.getAllMachine = (req, res) => {
 // 通过id获取机器
 exports.getMachineById = (req, res) => {
   const id = req.params.id;
-  
+
   if(id && id.match(idReg)){
     Machine.findById({id:id},result => {
       if(result.done){
