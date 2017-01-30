@@ -13,6 +13,8 @@ const {
 
 const machine = require('./routes/machine');
 const user = require('./routes/user');
+const record = require('./routes/record');
+const activity = require('./routes/activity');
 
 // 连接数据库
 mongoose.Promise = global.Promise;
@@ -37,13 +39,16 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: {
+    httpOnly: true,
     maxAge: cookieTime
   }
 }));
 
 // 路由
-app.use('/machine',machine);
-app.use('/user',user);
+app.use('/machine', machine);
+app.use('/user', user);
+app.use('/record', record);
+app.use('/activity', activity)
 
 // 404
 app.use((req, res) => {

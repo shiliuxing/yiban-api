@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-
 const Schema = mongoose.Schema;
+
 const User = new Schema({
   "realname": { type: String, require: true },
   "studentId": { type: String, require: true }

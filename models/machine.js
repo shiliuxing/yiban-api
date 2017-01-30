@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const Machine = new Schema({
   "code": { type: String, require: true },
-  "mark": { type: String, require: true}
+  "mark": { type: String, require: true }
 });
 
 /**
@@ -17,7 +17,7 @@ Machine.statics.save = function(obj, callback){
     .findOne({code:obj.code})
     .exec((err, data) => {
       if(err){
-        callback({done:false,data:'添加失败，请稍后重试'});
+        callback({done:false,data:'查找失败，请稍后重试'});
       }else{
         if(data){
           // 已经存在该机器
@@ -28,7 +28,7 @@ Machine.statics.save = function(obj, callback){
           machine.save(err => {
             err ? callback({done:false,data:'添加失败，请稍后重试'}) : callback({done:true,data:machine});
           });
-        }  
+        }
       }
     })
 
@@ -78,7 +78,7 @@ Machine.statics.updateInfo = function(obj, callback) {
   const newObj = {};
   obj.code ? (newObj['code'] = obj.code) : '';
   obj.mark ? (newObj['mark'] = obj.mark) : '';
-  
+
   this
     .where({_id:obj.id})
     .update(newObj)
