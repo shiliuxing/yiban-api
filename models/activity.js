@@ -29,21 +29,20 @@ Activity.statics.save = function(obj, callback) {
  * obj.id 机器id
  * callback 回调函数
  */
- /*
-Machine.statics.findById = function(obj, callback) {
+Activity.statics.findById = function(obj, callback) {
   this
     .findOne({_id:obj.id})
+    .populate('machine')
     .exec((err, data) => {
       if(err){
         callback({done:false,data:'查找失败，请稍后重试'});
       }else if(data){
         callback({done:true,data:data});
       }else{
-        callback({done:false,data:'没有该机器'});
+        callback({done:false,data:'没有该活动'});
       }
     })
 }
-*/
 
 /**
  * 根据活动名查找活动
@@ -53,6 +52,7 @@ Machine.statics.findById = function(obj, callback) {
 Activity.statics.findByName = function(obj, callback) {
   this
     .findOne({name:obj.name})
+    .populate('machine')
     .exec((err, data) => {
       if(err){
         callback({done:false,data:'查找失败，请稍后重试'});
@@ -70,9 +70,47 @@ Activity.statics.findByName = function(obj, callback) {
 Activity.statics.findByMachine = function(obj, callback) {
   this
     .find({machine:obj.machine})
+    .populate('machine')
     .exec((err, data) => {
       if(err){
         callback({done:false,data:'查找失败，请稍后重试'});
+      }else{
+        callback({done:true,data:data});
+      }
+    })
+}
+
+/**
+ * 根据id删除活动
+ * obj.id 活动id
+ * callback 回调函数
+ */
+Activity.statics.deleteById = function(obj, callback) {
+  this
+    .remove({_id:obj.id})
+    .exec((err, data) => {
+      err ? callback({done:false,data:'删除失败，请稍后重试'}) : callback({done:true,data:data});
+    })
+}
+
+/**
+ * 查找活动
+ * obj.lastId 从该id开始查找 可选
+ * obj.count 查找数量 可选
+ * callback 回调函数
+ */
+Activity.statics.findActivity = function(obj, callback) {
+  const query = obj.lastId ? { _id:{$gt:obj.lastId} } : {};
+  const count = obj.count ? obj.count : 20;
+
+  this
+    .find(query)
+    .limit(count)
+    .populate('machine')
+    .sort({_id:1})
+    .exec((err, data) => {
+      if(err){
+        callback({done:false,data:'查找活动出错，请稍后重试'});
       }else{
         callback({done:true,data:data});
       }
