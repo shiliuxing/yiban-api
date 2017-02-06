@@ -1,4 +1,6 @@
 const Machine = require('../models/machine');
+const Activity = require('../models/activity');
+// TODO: 删除机器时要删除机器绑定的活动
 
 const decrypt = require('../utils/decrypt');
 
@@ -110,7 +112,7 @@ exports.modifyMachine = (req, res) => {
     id:id
   }, result => {
     if(result.done){
-      const newInfo = {id:result.data._id};
+      const newInfo = {id:id};
       const code = decrypt.enAes192(result.data.code).split('---');
 
       if(mac && cpu){
@@ -133,7 +135,7 @@ exports.modifyMachine = (req, res) => {
       });
 
     }else{
-      res.json({code:1,msg:result.data});
+      res.status(404).json({code:1,msg:result.data});
     }
   })
 

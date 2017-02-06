@@ -1,77 +1,138 @@
-const User = require('../models/user');
 const Record = require('../models/record');
+const User = require('../models/user');
+const Activity = require('../models/activity');
 
 const idReg = /^[0-9a-fA-F]{24}$/;
 
 // 新增签到记录
 exports.addRecord = (req, res) => {
-  // const time
+  const time = parseInt(req.body.time);
+  const owner = req.body.owner;
+  const activity = req.body.activity;
+
+  if( !(time && owner && activity) ) {
+    req.json({code:1,msg:'缺失参数或时间不正确'});
+    return;
+  }
+
+
+  if( !(owner.match(idReg) && activity.match(idReg)) ){
+    req.json({code:1,msg:'拥有者或活动的id格式不正确'});
+    return;
+  }
+
+  User.findById({
+    id: owner
+  }, result => {
+    if(result.done){
+      Activity.findById({
+        id: activity
+      }, result => {
+        if(result.done){
+          Record.save({time,owner,activity},result => {
+            if(result.done){
+              res.json({code:0,msg:'添加成功',id:result.data._id});
+            }else{
+              // 添加失败
+              res.json({code:1,msg:result.data});
+            }
+          })
+        }else{
+          // 没有该活动
+          res.json({code:1,msg:result.data});
+        }
+      })
+    }else{
+      // 没有该用户
+      res.json({code:1,msg:result.data});
+    }
+  })
+
 }
 
 // 删除签到记录
 exports.deleteRecord = (req, res) => {
-  const id = req.body.id;
+  const id = req.params.id;
 
-  if(id && id.match(reg)){
-    Log.deleteById({
-      id: id
-    }, (result) => {
-      if(result.done){
-        // 删除成功
-        res.json({code:0,msg:"删除成功"});
-      }else{
-        // 删除失败
-        res.json({code:1,msg:"删除失败"});
-      }
-    });
-  }else{
-    res.json({code:1,msg:"参数不合法"});
+  if( !(id && id.match(idReg)) ){
+    res.status(404).json({code:1,msg:"id格式不正确"});
+    return;
   }
+
+  Record.deleteById({
+    id: id
+  }, (result) => {
+    if(result.done){
+      res.json({code:0,msg:"删除成功"});
+    }else{
+      // 删除失败
+      res.json({code:1,msg:result.data});
+    }
+  });
+
 }
 
 // 修改签到记录
 exports.modifyRecord = (req, res) => {
-  const id = req.body.id;
   const time = Number(req.body.time);
-  const studentId = req.body.studentId;
+  const owner = req.body.owner;
+  const activity = req.body.activity;
 
-  if( id && id.match(reg) && (time || studentId) ){
-    Log.modifyRecord({
-      id: id,
-      time: time,
-      studentId: studentId
-    }, (result) => {
-      if(result.done && result.data.nModified){
-        res.json({code:0,msg:"修改成功"});
-      }else{
-        res.json({code:1,msg:"修改失败"});
-      }
-    })
-  }else{
-    res.json({code:1,msg:"参数不合法"});
+  const id = req.params.id;
+
+  if( !(id && id.match(idReg)) ){
+    res.status(404).json({code:1,msg:'没有该记录'});
+    return;
   }
+
+  // TODO: 校验owner和activity在数据库中存在
+  Record.findById({
+    id: id
+  }, result => {
+    if(result.done){
+      const newObj = {id:id};
+      time ? (newObj['time'] = time) : null;
+      owner ? (newObj['owner'] = owner) : null;
+      activity ? (newObj['activity'] = activity) : null;
+
+      Record.updateInfo(newObj, result => {
+        if(result.done){
+          res.json({code:0,msg:'修改成功'});
+        }else{
+          res.json({code:1,msg:result.data});
+        }
+      })
+    }else{
+      res.status(404).json({code:1,msg:result.data});
+    }
+  })
+
 }
 
 // 查询签到记录
 exports.getRecord = (req, res) => {
-  res.end('getRecord');
-  /*
-  const start = req.query.start;
-  const end = req.query.end;
-  const realname = req.query.realname;
-  const studentId = req.query.studentId;
   const lastId = req.query.lastId;
+  const count = Number(req.query.count);
 
-  // 所有参数都没有，查询当日签到记录
-  if (!start && !end && !realname && !studentId) {
+  if( !(lastId && lastId.match(idReg)) ){
+    res.json({code:1,msg:'id格式不正确'});
+    return;
+  }
 
-    Log.findByTime({
-      time:new Date().getTime()
-    }, (data) => {
-      res.json(handleJson(data.data));
-    })
+  Record.findRecord({lastId,count}, result => {
+    if(result.done){
+      res.json({
+        code: 0,
+        msg: '查询成功',
+        number: result.data.length,
+        records: result.data.map(handlerRecord)
+      });
+    }else{
+      res.json({code:1,msg:result.data});
+    }
+  })
 
-
+  /*
   // 有姓名或学号
   } else if (realname || studentId) {
 
@@ -121,22 +182,33 @@ exports.getRecord = (req, res) => {
 
 }
 
+exports.getByActivity = (req, res) => {
+  const lastId = req.query.lastId;
+  const count = Number(req.query.count);
+  const start = req.query.start;
+  const end = req.query.end;
+
+  const name = req.params.name;
+};
+exports.getByRealname = (req, res) => {
+
+};
+exports.getByStudentId = (req, res) => {
+
+};
+
+
 /**
- * 将从数据库中取出来的数据处理成前端需要的格式
- * data 存储签到信息的json数组
+ * 过滤记录信息，将查找到的记录信息处理成接口需要的形式
+ * info 存放记录信息的json对象
+ * 返回处理后json对象
  */
-function handleJson(data){
-  for(let i=0;i<data.length;i++){
-    let newJson = {};
-    newJson._id = data[i]._id;
-    newJson.time = data[i].time;
-    newJson.realname = data[i].owner.realname;
-    newJson.studentId = data[i].owner.studentId;
-    data[i] = newJson;
-  }
+function handlerRecord(info){
   return {
-    code: 1,
-    count: data.length,
-    record: data
+    id: info._id,
+    time: info.time,
+    activity: info.activity.name,
+    studentId: info.owner.studentId,
+    realname: info.owner.realname
   }
 }

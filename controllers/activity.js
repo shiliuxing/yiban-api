@@ -76,7 +76,7 @@ exports.modifyActivity = (req, res) => {
 
   deleteActivity(id,(result, data) => {
     if(!result.code){
-      let newInfo = Object.assign({},data._doc,getActivityObj(start,end,name,machine));
+      const newInfo = Object.assign({},data._doc,getActivityObj(start,end,name,machine));
       console.log(newInfo)
       addActivity(newInfo, result => {
         if(!result.code){
@@ -151,7 +151,7 @@ exports.getActivityByName = (req, res) => {
 }
 
 function getActivityObj(start, end, name, machine) {
-  let obj = {};
+  const obj = {};
   start ? (obj['start']=start) : null;
   end ? (obj['end']=end) : null;
   name ? (obj['name']=name) : null;

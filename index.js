@@ -24,6 +24,9 @@ mongoose.connection.on('error', (err) => console.log(err));
 
 const app = express();
 
+// 信任代理
+app.enable('trust proxy');
+
 // restc 中间件
 app.use(restc.express());
 

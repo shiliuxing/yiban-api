@@ -30,10 +30,10 @@ function test(newActivity, activities) {
 
     if( compareDate(newActivity, activities[i]) && compareTime(newActivity, activities[i]) ){
       return true;
-    }else{
-      return false;
     }
   }
+
+  return false;
 }
 
 /**
@@ -107,7 +107,6 @@ function compareTime(a1,a2,type='hour',reversed=false){
  * 解析活动
  */
 function parseActivity(activity){
-  // console.log('活动:',activity);
   const start = activity.start.split(' ');
   const end = activity.end.split(' ');
 

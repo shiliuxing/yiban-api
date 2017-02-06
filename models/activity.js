@@ -25,8 +25,8 @@ Activity.statics.save = function(obj, callback) {
 }
 
 /**
- * 根据id查找机器
- * obj.id 机器id
+ * 根据id查找活动
+ * obj.id 活动id
  * callback 回调函数
  */
 Activity.statics.findById = function(obj, callback) {

@@ -4,7 +4,8 @@ const ObjectId = Schema.Types.ObjectId;
 
 const Record = new Schema({
   "time": { type: Number, require: true },
-  "owner": { type: ObjectId, require: true, ref:'User' }
+  "owner": { type: ObjectId, require: true, ref:'User' },
+  "activity" : { type: ObjectId, require: true, ref:'Activity' }
 });
 
 /**
@@ -33,6 +34,87 @@ Record.statics.deleteByOwner = function(obj, callback) {
     })
 }
 
+/**
+ * 根据记录id删除记录
+ * obj.id 记录id
+ * callback 回调函数
+ */
+Record.statics.deleteById = function(obj, callback) {
+  this
+    .remove({_id:obj.id})
+    .exec((err, data) => {
+      err ? callback({done:false,data:err}) : callback({done:true,data:data});
+    })
+}
+
+/**
+ * 根据id查找记录
+ * obj.id 记录id
+ * callback 回调函数
+ */
+Record.statics.findById = function(obj, callback) {
+  this
+    .findOne({_id:obj.id})
+    .populate('owner activity')
+    .exec((err, data) => {
+      if(err){
+        callback({done:false,data:'查找失败，请稍后重试'});
+      }else if(data){
+        callback({done:true,data:data});
+      }else{
+        callback({done:false,data:'没有该活动'});
+      }
+    })
+}
+
+/**
+ * 查找记录
+ * obj.lastId 从该id开始查找 可选
+ * obj.count 查找数量 可选
+ * callback 回调函数
+ */
+Record.statics.findRecord = function(obj, callback){
+  const query = obj.lastId ? { _id:{$gt:obj.lastId} } : {};
+  // const {startTime,endTime} = getTimeRange(obj.time);
+  // query['time'] = {$gte:startTime,$lt:endTime};
+  // obj.owner ? (query['owner'] = obj.owner) : null;
+
+  const count = obj.count ? (count = obj.count) : 20;
+
+  this
+    .find(query)
+    .limit(count)
+    .populate('owner activity')
+    .exec((err, data) => {
+      err ? callback({done:false,data:err}) : callback({done:true,data:data});  
+    })
+
+}
+
+/**
+ * 更新记录
+ * obj.id 记录id 必填
+ * obj.time 签到时间 可选
+ * obj.owner 签到者id 可选
+ * obj.activity 签到活动id 可选
+ * callback 回调函数
+ */
+Record.statics.updateInfo = function(obj, callback) {
+  const newObj = {};
+  obj.time ? (newObj['time'] = obj.time) : null;
+  obj.owner ? (newObj['owner'] = obj.owner) : null;
+  obj.activity ? (newObj['activity'] = obj.activity) : null;
+
+  this
+    .where({_id:obj.id})
+    .update(newObj)
+    .exec((err, data) => {
+      err ? callback({done:false,data:'更新失败，请稍后重试'}) : callback({done:true,data:data});
+    })
+}
+
+
+
 /*
 // 新增一个记录
 Log.statics.save = function(obj, callback){
@@ -42,22 +124,7 @@ Log.statics.save = function(obj, callback){
   });
 }
 
-// 根据时间戳和用户名查签到记录
-Log.statics.findByTime = function(obj, callback){
-  const query = {};
-  const {startTime,endTime} = getTimeRange(obj.time);
-  query['time'] = {$gte:startTime,$lt:endTime};
-  obj.owner ? (query['owner'] = obj.owner) : null;
 
-  this
-    .find(query)
-    .populate('owner')
-    .exec((err, data) => {
-      err ? callback({done:false,data:err}) : callback({done:true,data:data});  
-    })
-
-}
-*/
 
 
 /**
@@ -108,19 +175,6 @@ Log.statics.deleteByOwner = function(obj, callback) {
 */
 
 /**
- * 根据id删除记录
- */
- /*
-Log.statics.deleteById = function(obj, callback) {
-  this
-    .remove({_id:obj.id})
-    .exec((err, data) => {
-      err ? callback({done:false,data:err}) : callback({done:true,data:data});
-    })
-}
-*/
-
-/**
  * 修改记录
  */
  /*
@@ -163,11 +217,12 @@ Log.statics.modifyRecord = function(obj, callback) {
 
 }
 */
+
+
 /**
  * 获取时间戳范围
  * time 时间戳
  */
- /*
 function getTimeRange(time){
   const dTime = new Date(time);
   const formatTime = dTime.getFullYear() + '-' + (dTime.getMonth() + 1) + '-' + dTime.getDate();
@@ -177,5 +232,5 @@ function getTimeRange(time){
     endTime: startTime + 86400000
   }
 }
-*/
+
 module.exports = mongoose.model('Record',Record);
