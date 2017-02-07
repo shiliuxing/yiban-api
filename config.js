@@ -3,4 +3,5 @@ module.exports = {
   mongodb: 'mongodb://yiban:yiban@127.0.0.1/yiban',
   secret: 'flyingstudio',
   cookieTime: 60*60*1000, // cookie有效时间
+  webUrl: 'http://yiban.xgy666.cn/'
 };

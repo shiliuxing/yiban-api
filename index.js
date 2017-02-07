@@ -3,12 +3,14 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const restc = require('restc');
+const cors = require('cors');
 
 const {
   secret,
   cookieTime,
   port,
-  mongodb
+  mongodb,
+  webUrl
 } = require('./config');
 
 const machine = require('./routes/machine');
@@ -47,11 +49,18 @@ app.use(session({
   }
 }));
 
+// cors配置
+const corsOptions = {
+  origin: config.webUrl,
+  optionsSuccessStatus: 200
+}
+app.use(cors(corsOptions));
+
 // 路由
 app.use('/machine', machine);
 app.use('/user', user);
 app.use('/record', record);
-app.use('/activity', activity)
+app.use('/activity', activity);
 
 // 404
 app.use((req, res) => {
