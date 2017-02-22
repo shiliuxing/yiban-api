@@ -8,6 +8,9 @@ const {
   getMachineById
 } = require('../controllers/machine');
 
+const { checkLogin } = require('../controllers/auth');
+router.use(checkLogin);
+
 router.post('/', addMachine);
 router.delete('/:id', deleteMachine);
 router.put('/:id', modifyMachine);

@@ -8,6 +8,9 @@ const {
   getActivityByName
 } = require('../controllers/activity');
 
+const { checkLogin } = require('../controllers/auth');
+router.use(checkLogin);
+
 router.post('/', addActivity);
 router.delete('/:id', deleteActivity);
 router.put('/:id', modifyActivity);

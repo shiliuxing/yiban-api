@@ -7,6 +7,9 @@ const {
   getUser,
 } = require('../controllers/user');
 
+const { checkLogin } = require('../controllers/auth');
+router.use(checkLogin);
+
 router.post('/', addUser);
 router.delete('/:id', deleteUser);
 router.put('/:id', modifyUser);

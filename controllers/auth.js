@@ -5,7 +5,7 @@ const decrypt = require('../utils/decrypt');
 exports.login = (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
-  
+
   if(req.session.logined){
     res.json({code:1,msg:'已经登录'});
     return;
@@ -37,4 +37,13 @@ exports.login = (req, res) => {
 exports.logout = (req, res) => {
   req.session.logined = false;
   res.json({code:0,msg:'退出成功'});
+}
+
+// 检查登录状态
+exports.checkLogin = (req, res, next) => {
+  if(req.session.logined){
+    next();
+  }else{
+    res.json({code:1,msg:'请先登录'});
+  }
 }
