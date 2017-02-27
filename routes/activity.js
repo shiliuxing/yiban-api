@@ -1,5 +1,4 @@
 const router = require('express').Router();
-
 const {
   addActivity,
   deleteActivity,
@@ -8,9 +7,8 @@ const {
   getActivityByName
 } = require('../controllers/activity');
 
-const { checkLogin } = require('../controllers/auth');
-router.use(checkLogin);
-
+const { refreshToken } = require('../controllers/auth');
+router.use(refreshToken);
 router.post('/', addActivity);
 router.delete('/:id', deleteActivity);
 router.put('/:id', modifyActivity);

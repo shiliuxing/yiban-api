@@ -10,8 +10,8 @@ const {
   getByStudentId
 } = require('../controllers/record');
 
-const { checkLogin } = require('../controllers/auth');
-router.use(checkLogin);
+const { refreshToken } = require('../controllers/auth');
+router.use(refreshToken);
 
 router.post('/', addRecord);
 router.delete('/:id', deleteRecord);

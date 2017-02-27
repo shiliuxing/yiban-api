@@ -18,7 +18,7 @@ exports.addActivity = (req, res) => {
 
   // 校验cron表达式
   if( !(Util.checkCron(start) && Util.checkCron(end)) ){
-    res.json({code:1,msg:'cron表达式不合法'});    
+    res.json({code:1,msg:'cron表达式不合法'});
     return;
   }
 
@@ -70,14 +70,13 @@ exports.modifyActivity = (req, res) => {
 
   // 校验cron表达式
   if( (start && !(Util.checkCron(start))) || (end && !(Util.checkCron(end))) ){
-    res.json({code:1,msg:'cron表达式不合法'});    
+    res.json({code:1,msg:'cron表达式不合法'});
     return;
   }
 
   deleteActivity(id,(result, data) => {
     if(!result.code){
       const newInfo = Object.assign({},data._doc,getActivityObj(start,end,name,machine));
-      console.log(newInfo)
       addActivity(newInfo, result => {
         if(!result.code){
           res.json(result);
@@ -98,7 +97,7 @@ exports.modifyActivity = (req, res) => {
 exports.getActivity = (req, res) => {
   const lastId = req.query.lastId;
   const count = parseInt(req.query.count);
-
+  // console.log('req.user:',req.user);
   // 校验 id
   if(lastId && !lastId.match(idReg)){
     res.json({code:1,msg:'id格式错误'});
@@ -126,12 +125,10 @@ exports.getActivity = (req, res) => {
 // 根据活动获取活动信息
 exports.getActivityByName = (req, res) => {
   const name = req.params.name;
-  console.log('活动名:',name);
 
   Activity.findByName({
     name: name
   }, result => {
-    console.log('result:',result);
     if(result.done){
       res.json({
         code:0,

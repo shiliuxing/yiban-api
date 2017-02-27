@@ -1,15 +1,12 @@
 const Auth = require('../models/auth');
 const decrypt = require('../utils/decrypt');
+const jwt = require('jsonwebtoken');
+const { secret,expires } = require('../config');
 
 // 登录
 exports.login = (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
-
-  if(req.session.logined){
-    res.json({code:1,msg:'已经登录'});
-    return;
-  }
 
   if( !(username && password) ){
     res.json({code:0,msg:'缺失参数'});
@@ -20,10 +17,11 @@ exports.login = (req, res) => {
     username: username.trim()
   },result => {
     if(result.done){
-      if(result.data.password === decrypt.md5(password.trim())){
-        req.session.user = username;
-        req.session.logined = true;
-        res.json({code:0,msg:'登录成功'})
+      if(result.data && (result.data.password === decrypt.md5(password.trim())) ){
+        const token = jwt.sign({id:result.data._id}, secret, {expiresIn:expires});
+        res
+          .cookie('token',token,{httpOnly:true,expires:new Date(Date.now() + expires*1000)})
+          .json({code:0,msg:'登录成功',data:{username:result.data.username,token}});
       }else{
         res.json({code:1,msg:'用户名或密码错误'});
       }
@@ -35,15 +33,12 @@ exports.login = (req, res) => {
 
 // 退出
 exports.logout = (req, res) => {
-  req.session.logined = false;
-  res.json({code:0,msg:'退出成功'});
+  res.clearCookie('token').json({code:0,msg:'退出成功'});
 }
 
-// 检查登录状态
-exports.checkLogin = (req, res, next) => {
-  if(req.session.logined){
-    next();
-  }else{
-    res.json({code:1,msg:'请先登录'});
-  }
+// 刷新token
+exports.refreshToken = (req, res, next) => {
+  const token = jwt.sign({id:req.user.id}, secret, {expiresIn:expires}); // 1小时，单位秒
+  res.cookie('token', token, {httpOnly:true, expires: new Date(Date.now() + expires*1000)}); // 1小时，单位毫秒
+  next();
 }

@@ -8,8 +8,8 @@ const {
   getMachineById
 } = require('../controllers/machine');
 
-const { checkLogin } = require('../controllers/auth');
-router.use(checkLogin);
+const { refreshToken } = require('../controllers/auth');
+router.use(refreshToken);
 
 router.post('/', addMachine);
 router.delete('/:id', deleteMachine);
