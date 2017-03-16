@@ -20,7 +20,7 @@ exports.login = (req, res) => {
       if(result.data && (result.data.password === decrypt.md5(password.trim())) ){
         const token = jwt.sign({id:result.data._id}, secret, {expiresIn:expires});
         res
-          .cookie('token',token,{httpOnly:true,expires:new Date(Date.now() + expires*1000)})
+          .cookie('token',token,{expires:new Date(Date.now() + expires*1000)})
           .json({code:0,msg:'登录成功',data:{username:result.data.username,token}});
       }else{
         res.json({code:1,msg:'用户名或密码错误'});
@@ -39,6 +39,6 @@ exports.logout = (req, res) => {
 // 刷新token
 exports.refreshToken = (req, res, next) => {
   const token = jwt.sign({id:req.user.id}, secret, {expiresIn:expires}); // 1小时，单位秒
-  res.cookie('token', token, {httpOnly:true, expires: new Date(Date.now() + expires*1000)}); // 1小时，单位毫秒
+  res.cookie('token', token, {expires: new Date(Date.now() + expires*1000)}); // 1小时，单位毫秒
   next();
 }

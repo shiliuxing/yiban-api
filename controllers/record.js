@@ -11,13 +11,13 @@ exports.addRecord = (req, res) => {
   const activity = req.body.activity;
 
   if( !(time && owner && activity) ) {
-    req.json({code:1,msg:'缺失参数或时间不正确'});
+    res.json({code:1,msg:'缺失参数或时间不正确'});
     return;
   }
 
 
   if( !(owner.match(idReg) && activity.match(idReg)) ){
-    req.json({code:1,msg:'拥有者或活动的id格式不正确'});
+    res.json({code:1,msg:'拥有者或活动的id格式不正确'});
     return;
   }
 
@@ -114,7 +114,7 @@ exports.getRecord = (req, res) => {
   const lastId = req.query.lastId;
   const count = Number(req.query.count);
 
-  if( !(lastId && lastId.match(idReg)) ){
+  if( lastId && !lastId.match(idReg) ){
     res.json({code:1,msg:'id格式不正确'});
     return;
   }
@@ -181,21 +181,6 @@ exports.getRecord = (req, res) => {
   */
 
 }
-
-exports.getByActivity = (req, res) => {
-  const lastId = req.query.lastId;
-  const count = Number(req.query.count);
-  const start = req.query.start;
-  const end = req.query.end;
-
-  const name = req.params.name;
-};
-exports.getByRealname = (req, res) => {
-
-};
-exports.getByStudentId = (req, res) => {
-
-};
 
 
 /**
